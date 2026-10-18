@@ -1,0 +1,26 @@
+{
+  "combo_name": "geo",
+  "task": "classification",
+  "model_name": "LogisticRegression",
+  "n_companies_trained_on": 289,
+  "numeric_cols": [
+    "geo__lat",
+    "geo__lon",
+    "geo__Mean_NDVI",
+    "geo__Vegetation_pct",
+    "geo__Mean_NDWI",
+    "geo__Water_pct",
+    "geo__Mean_NDBI",
+    "geo__BuiltUp_pct",
+    "geo__BSI",
+    "geo__LST_Celsius",
+    "geo__Forest_pct",
+    "geo__Urban_pct",
+    "geo__Agriculture_pct",
+    "geo__WaterCover_pct",
+    "geo__has_imagery"
+  ],
+  "categorical_cols": [],
+  "target_transform": null,
+  "trained_at": "2026-09-22T18:37:09.600683+00:00"
+}

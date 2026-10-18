@@ -1,0 +1,26 @@
+# secrets
+.env
+.env.*
+!.env.example
+
+# python
+__pycache__/
+*.pyc
+venv/
+.venv/
+.ipynb_checkpoints/
+
+# node
+node_modules/
+dist/
+build/
+
+# local databases and OS/editor files
+*.db
+*.db-wal
+*.db-shm
+.DS_Store
+.vscode/
+
+# large downloaded data (re-create with scripts/08_fetch_esg_reports.py)
+esg_reports/

@@ -1,0 +1,34 @@
+{
+  "combo_name": "esg_geo",
+  "task": "classification",
+  "model_name": "Stacking",
+  "n_companies_trained_on": 289,
+  "numeric_cols": [
+    "esg__has_10k",
+    "esg__word_count",
+    "esg__safety_kw_per_1k",
+    "esg__environment_kw_per_1k",
+    "esg__social_kw_per_1k",
+    "esg__governance_kw_per_1k",
+    "geo__lat",
+    "geo__lon",
+    "geo__Mean_NDVI",
+    "geo__Vegetation_pct",
+    "geo__Mean_NDWI",
+    "geo__Water_pct",
+    "geo__Mean_NDBI",
+    "geo__BuiltUp_pct",
+    "geo__BSI",
+    "geo__LST_Celsius",
+    "geo__Forest_pct",
+    "geo__Urban_pct",
+    "geo__Agriculture_pct",
+    "geo__WaterCover_pct",
+    "geo__has_imagery"
+  ],
+  "categorical_cols": [
+    "esg__data_quality_flag"
+  ],
+  "target_transform": null,
+  "trained_at": "2026-09-22T18:37:24.661875+00:00"
+}

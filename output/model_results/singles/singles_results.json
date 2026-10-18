@@ -1,0 +1,364 @@
+{
+  "financial": {
+    "n_companies": 289,
+    "n_train": 203,
+    "n_test": 86,
+    "n_features": 39,
+    "classification": {
+      "LogisticRegression": {
+        "accuracy": 0.5930232558139535,
+        "precision": 0.6842105263157895,
+        "recall": 0.6964285714285714,
+        "f1": 0.6902654867256637,
+        "roc_auc": 0.6095238095238096,
+        "confusion_matrix": [
+          [
+            12,
+            18
+          ],
+          [
+            17,
+            39
+          ]
+        ]
+      },
+      "RandomForest": {
+        "accuracy": 0.6395348837209303,
+        "precision": 0.6984126984126984,
+        "recall": 0.7857142857142857,
+        "f1": 0.7394957983193278,
+        "roc_auc": 0.5732142857142858,
+        "confusion_matrix": [
+          [
+            11,
+            19
+          ],
+          [
+            12,
+            44
+          ]
+        ]
+      },
+      "XGBoost": {
+        "accuracy": 0.6744186046511628,
+        "precision": 0.7121212121212122,
+        "recall": 0.8392857142857143,
+        "f1": 0.7704918032786885,
+        "roc_auc": 0.6589285714285714,
+        "confusion_matrix": [
+          [
+            11,
+            19
+          ],
+          [
+            9,
+            47
+          ]
+        ]
+      },
+      "Stacking": {
+        "accuracy": 0.5813953488372093,
+        "precision": 0.6724137931034483,
+        "recall": 0.6964285714285714,
+        "f1": 0.6842105263157895,
+        "roc_auc": 0.5886904761904762,
+        "confusion_matrix": [
+          [
+            11,
+            19
+          ],
+          [
+            17,
+            39
+          ]
+        ]
+      }
+    },
+    "regression": {
+      "ElasticNet": {
+        "rmse": 70139866573853.96,
+        "mae": 7563376580704.356,
+        "r2": -9776896955180944.0,
+        "target_transform": "log1p"
+      },
+      "RandomForest": {
+        "rmse": 724619.4030171639,
+        "mae": 213148.33457552784,
+        "r2": -0.04349671183325032,
+        "target_transform": "log1p"
+      },
+      "XGBoost": {
+        "rmse": 715203.2881838309,
+        "mae": 209558.01364739827,
+        "r2": -0.01655334109341222,
+        "target_transform": "log1p"
+      },
+      "Stacking": {
+        "rmse": 347423244089.70483,
+        "mae": 41285745127.43943,
+        "r2": -239877166164.63617,
+        "target_transform": "log1p"
+      }
+    }
+  },
+  "esg": {
+    "n_companies": 289,
+    "n_train": 203,
+    "n_test": 86,
+    "n_features": 7,
+    "classification": {
+      "LogisticRegression": {
+        "accuracy": 0.5581395348837209,
+        "precision": 0.6666666666666666,
+        "recall": 0.6428571428571429,
+        "f1": 0.6545454545454545,
+        "roc_auc": 0.5696428571428571,
+        "confusion_matrix": [
+          [
+            12,
+            18
+          ],
+          [
+            20,
+            36
+          ]
+        ]
+      },
+      "RandomForest": {
+        "accuracy": 0.5813953488372093,
+        "precision": 0.65625,
+        "recall": 0.75,
+        "f1": 0.7,
+        "roc_auc": 0.5595238095238095,
+        "confusion_matrix": [
+          [
+            8,
+            22
+          ],
+          [
+            14,
+            42
+          ]
+        ]
+      },
+      "XGBoost": {
+        "accuracy": 0.6511627906976745,
+        "precision": 0.6710526315789473,
+        "recall": 0.9107142857142857,
+        "f1": 0.7727272727272727,
+        "roc_auc": 0.48214285714285715,
+        "confusion_matrix": [
+          [
+            5,
+            25
+          ],
+          [
+            5,
+            51
+          ]
+        ]
+      },
+      "Stacking": {
+        "accuracy": 0.5813953488372093,
+        "precision": 0.6785714285714286,
+        "recall": 0.6785714285714286,
+        "f1": 0.6785714285714286,
+        "roc_auc": 0.5720238095238095,
+        "confusion_matrix": [
+          [
+            12,
+            18
+          ],
+          [
+            18,
+            38
+          ]
+        ]
+      }
+    },
+    "regression": {
+      "skipped": "no financial/geo in combo (Option 2 \u2013 classification only)"
+    }
+  },
+  "news": {
+    "n_companies": 289,
+    "n_train": 203,
+    "n_test": 86,
+    "n_features": 7,
+    "classification": {
+      "LogisticRegression": {
+        "accuracy": 0.5348837209302325,
+        "precision": 0.7222222222222222,
+        "recall": 0.4642857142857143,
+        "f1": 0.5652173913043478,
+        "roc_auc": 0.5595238095238096,
+        "confusion_matrix": [
+          [
+            20,
+            10
+          ],
+          [
+            30,
+            26
+          ]
+        ]
+      },
+      "RandomForest": {
+        "accuracy": 0.5116279069767442,
+        "precision": 0.64,
+        "recall": 0.5714285714285714,
+        "f1": 0.6037735849056604,
+        "roc_auc": 0.4505952380952381,
+        "confusion_matrix": [
+          [
+            12,
+            18
+          ],
+          [
+            24,
+            32
+          ]
+        ]
+      },
+      "XGBoost": {
+        "accuracy": 0.5930232558139535,
+        "precision": 0.64,
+        "recall": 0.8571428571428571,
+        "f1": 0.732824427480916,
+        "roc_auc": 0.4541666666666666,
+        "confusion_matrix": [
+          [
+            3,
+            27
+          ],
+          [
+            8,
+            48
+          ]
+        ]
+      },
+      "Stacking": {
+        "accuracy": 0.5465116279069767,
+        "precision": 0.6808510638297872,
+        "recall": 0.5714285714285714,
+        "f1": 0.6213592233009708,
+        "roc_auc": 0.5589285714285714,
+        "confusion_matrix": [
+          [
+            15,
+            15
+          ],
+          [
+            24,
+            32
+          ]
+        ]
+      }
+    },
+    "regression": {
+      "skipped": "no financial/geo in combo (Option 2 \u2013 classification only)"
+    }
+  },
+  "geo": {
+    "n_companies": 289,
+    "n_train": 203,
+    "n_test": 86,
+    "n_features": 15,
+    "classification": {
+      "LogisticRegression": {
+        "accuracy": 0.5,
+        "precision": 0.6585365853658537,
+        "recall": 0.48214285714285715,
+        "f1": 0.5567010309278351,
+        "roc_auc": 0.4991071428571429,
+        "confusion_matrix": [
+          [
+            16,
+            14
+          ],
+          [
+            29,
+            27
+          ]
+        ]
+      },
+      "RandomForest": {
+        "accuracy": 0.5232558139534884,
+        "precision": 0.6595744680851063,
+        "recall": 0.5535714285714286,
+        "f1": 0.6019417475728155,
+        "roc_auc": 0.45029761904761906,
+        "confusion_matrix": [
+          [
+            14,
+            16
+          ],
+          [
+            25,
+            31
+          ]
+        ]
+      },
+      "XGBoost": {
+        "accuracy": 0.5465116279069767,
+        "precision": 0.6164383561643836,
+        "recall": 0.8035714285714286,
+        "f1": 0.6976744186046512,
+        "roc_auc": 0.400297619047619,
+        "confusion_matrix": [
+          [
+            2,
+            28
+          ],
+          [
+            11,
+            45
+          ]
+        ]
+      },
+      "Stacking": {
+        "accuracy": 0.5116279069767442,
+        "precision": 0.6521739130434783,
+        "recall": 0.5357142857142857,
+        "f1": 0.5882352941176471,
+        "roc_auc": 0.487202380952381,
+        "confusion_matrix": [
+          [
+            14,
+            16
+          ],
+          [
+            26,
+            30
+          ]
+        ]
+      }
+    },
+    "regression": {
+      "ElasticNet": {
+        "rmse": 741513.7743659406,
+        "mae": 217516.13104275116,
+        "r2": -0.09272181383338118,
+        "target_transform": "log1p"
+      },
+      "RandomForest": {
+        "rmse": 740393.3730180538,
+        "mae": 219238.66642631235,
+        "r2": -0.08942217973894451,
+        "target_transform": "log1p"
+      },
+      "XGBoost": {
+        "rmse": 742059.8701384792,
+        "mae": 229985.09631786653,
+        "r2": -0.09433189989817725,
+        "target_transform": "log1p"
+      },
+      "Stacking": {
+        "rmse": 740507.1898344143,
+        "mae": 217516.89139898788,
+        "r2": -0.0897571478767174,
+        "target_transform": "log1p"
+      }
+    }
+  }
+}

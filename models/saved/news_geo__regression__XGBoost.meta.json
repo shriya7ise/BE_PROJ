@@ -1,0 +1,33 @@
+{
+  "combo_name": "news_geo",
+  "task": "regression",
+  "model_name": "XGBoost",
+  "n_companies_trained_on": 289,
+  "numeric_cols": [
+    "news__has_news_data",
+    "news__total_articles",
+    "news__days_covered",
+    "news__avg_daily_articles",
+    "news__avg_mean_tone",
+    "news__std_mean_tone",
+    "news__pct_days_with_tone",
+    "geo__lat",
+    "geo__lon",
+    "geo__Mean_NDVI",
+    "geo__Vegetation_pct",
+    "geo__Mean_NDWI",
+    "geo__Water_pct",
+    "geo__Mean_NDBI",
+    "geo__BuiltUp_pct",
+    "geo__BSI",
+    "geo__LST_Celsius",
+    "geo__Forest_pct",
+    "geo__Urban_pct",
+    "geo__Agriculture_pct",
+    "geo__WaterCover_pct",
+    "geo__has_imagery"
+  ],
+  "categorical_cols": [],
+  "target_transform": "log1p",
+  "trained_at": "2026-09-22T18:37:27.721533+00:00"
+}

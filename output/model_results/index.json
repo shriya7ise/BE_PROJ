@@ -1,0 +1,37 @@
+{
+  "singles": {
+    "results_json": "output/model_results/singles/singles_results.json",
+    "classification_plot": "output/model_results/singles/singles_classification_f1_comparison.png",
+    "regression_plot": "output/model_results/singles/singles_regression_r2_comparison.png",
+    "confusion_matrix_dir": "output/model_results/singles",
+    "combos": [
+      "financial",
+      "esg",
+      "news",
+      "geo"
+    ]
+  },
+  "pairs": {
+    "results_json": "output/model_results/pairs/pairs_results.json",
+    "classification_plot": "output/model_results/pairs/pairs_classification_f1_comparison.png",
+    "regression_plot": "output/model_results/pairs/pairs_regression_r2_comparison.png",
+    "confusion_matrix_dir": "output/model_results/pairs",
+    "combos": [
+      "financial+esg",
+      "financial+news",
+      "financial+geo",
+      "esg+news",
+      "esg+geo",
+      "news+geo"
+    ]
+  },
+  "fourway": {
+    "results_json": "output/model_results/fourway/fourway_results.json",
+    "classification_plot": "output/model_results/fourway/fourway_classification_f1_comparison.png",
+    "regression_plot": "output/model_results/fourway/fourway_regression_r2_comparison.png",
+    "confusion_matrix_dir": "output/model_results/fourway",
+    "combos": [
+      "financial+esg+news+geo"
+    ]
+  }
+}

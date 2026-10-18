@@ -1,0 +1,104 @@
+{
+  "financial+esg+news+geo": {
+    "n_companies": 289,
+    "n_train": 203,
+    "n_test": 86,
+    "n_features": 68,
+    "classification": {
+      "LogisticRegression": {
+        "accuracy": 0.5581395348837209,
+        "precision": 0.6666666666666666,
+        "recall": 0.6428571428571429,
+        "f1": 0.6545454545454545,
+        "roc_auc": 0.594047619047619,
+        "confusion_matrix": [
+          [
+            12,
+            18
+          ],
+          [
+            20,
+            36
+          ]
+        ]
+      },
+      "RandomForest": {
+        "accuracy": 0.6162790697674418,
+        "precision": 0.6716417910447762,
+        "recall": 0.8035714285714286,
+        "f1": 0.7317073170731707,
+        "roc_auc": 0.5648809523809525,
+        "confusion_matrix": [
+          [
+            8,
+            22
+          ],
+          [
+            11,
+            45
+          ]
+        ]
+      },
+      "XGBoost": {
+        "accuracy": 0.6744186046511628,
+        "precision": 0.6944444444444444,
+        "recall": 0.8928571428571429,
+        "f1": 0.78125,
+        "roc_auc": 0.6321428571428571,
+        "confusion_matrix": [
+          [
+            8,
+            22
+          ],
+          [
+            6,
+            50
+          ]
+        ]
+      },
+      "Stacking": {
+        "accuracy": 0.5813953488372093,
+        "precision": 0.6666666666666666,
+        "recall": 0.7142857142857143,
+        "f1": 0.6896551724137931,
+        "roc_auc": 0.5863095238095238,
+        "confusion_matrix": [
+          [
+            10,
+            20
+          ],
+          [
+            16,
+            40
+          ]
+        ]
+      }
+    },
+    "regression": {
+      "ElasticNet": {
+        "rmse": 16694049152122.49,
+        "mae": 1800165877983.0132,
+        "r2": -553853038742905.75,
+        "target_transform": "log1p"
+      },
+      "RandomForest": {
+        "rmse": 726818.2291642652,
+        "mae": 214331.43849627848,
+        "r2": -0.04983921129273017,
+        "target_transform": "log1p"
+      },
+      "XGBoost": {
+        "rmse": 705382.951569724,
+        "mae": 203216.15396305016,
+        "r2": 0.011171249726337651,
+        "target_transform": "log1p"
+      },
+      "Stacking": {
+        "rmse": 1028512612673684.2,
+        "mae": 110907370451895.77,
+        "r2": -2.1022792840631427e+18,
+        "target_transform": "log1p"
+      }
+    }
+  }
+}

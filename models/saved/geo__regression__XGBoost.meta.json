@@ -1,0 +1,26 @@
+{
+  "combo_name": "geo",
+  "task": "regression",
+  "model_name": "XGBoost",
+  "n_companies_trained_on": 289,
+  "numeric_cols": [
+    "geo__lat",
+    "geo__lon",
+    "geo__Mean_NDVI",
+    "geo__Vegetation_pct",
+    "geo__Mean_NDWI",
+    "geo__Water_pct",
+    "geo__Mean_NDBI",
+    "geo__BuiltUp_pct",
+    "geo__BSI",
+    "geo__LST_Celsius",
+    "geo__Forest_pct",
+    "geo__Urban_pct",
+    "geo__Agriculture_pct",
+    "geo__WaterCover_pct",
+    "geo__has_imagery"
+  ],
+  "categorical_cols": [],
+  "target_transform": "log1p",
+  "trained_at": "2026-09-22T18:37:11.239521+00:00"
+}

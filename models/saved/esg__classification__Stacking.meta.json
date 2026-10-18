@@ -1,0 +1,19 @@
+{
+  "combo_name": "esg",
+  "task": "classification",
+  "model_name": "Stacking",
+  "n_companies_trained_on": 289,
+  "numeric_cols": [
+    "esg__has_10k",
+    "esg__word_count",
+    "esg__safety_kw_per_1k",
+    "esg__environment_kw_per_1k",
+    "esg__social_kw_per_1k",
+    "esg__governance_kw_per_1k"
+  ],
+  "categorical_cols": [
+    "esg__data_quality_flag"
+  ],
+  "target_transform": null,
+  "trained_at": "2026-09-22T18:37:07.899240+00:00"
+}

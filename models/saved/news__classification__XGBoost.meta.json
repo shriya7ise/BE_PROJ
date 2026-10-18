@@ -1,0 +1,18 @@
+{
+  "combo_name": "news",
+  "task": "classification",
+  "model_name": "XGBoost",
+  "n_companies_trained_on": 289,
+  "numeric_cols": [
+    "news__has_news_data",
+    "news__total_articles",
+    "news__days_covered",
+    "news__avg_daily_articles",
+    "news__avg_mean_tone",
+    "news__std_mean_tone",
+    "news__pct_days_with_tone"
+  ],
+  "categorical_cols": [],
+  "target_transform": null,
+  "trained_at": "2026-09-22T18:37:08.639176+00:00"
+}
