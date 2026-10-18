@@ -1,4 +1,4 @@
-const API = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+const API = import.meta.env.VITE_API_URL || "https://be-proj-fhrm.onrender.com";
 
 async function getJson(path) {
   const res = await fetch(`${API}${path}`);
