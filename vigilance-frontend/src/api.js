@@ -46,16 +46,15 @@ export async function fetchFinancials(limit = 100) {
   return getJson(`/api/financials?limit=${limit}`);
 }
 
-export async function sendChat(message, symbol) {
+export async function sendChat(message, symbol, extra = {}) {
   const res = await fetch(`${API}/api/chat`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ message, symbol: symbol || null }),
+    body: JSON.stringify({ message, symbol: symbol || null, ...extra }),
   });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
-
 /* ---- deep-dive endpoints ---- */
 export { API };
 

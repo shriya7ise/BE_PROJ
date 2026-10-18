@@ -1,19 +1,20 @@
+import { useEffect, useState } from "react";
 import { NavLink, Routes, Route, useLocation } from "react-router-dom";
+import { alertsApi } from "./alertsApi";
 import Overview from "./pages/Overview";
 import Companies from "./pages/Companies";
 import CompanyDetail from "./pages/CompanyDetail";
 import AIChat from "./pages/AIChat";
 import Signals from "./pages/Signals";
 import Financials from "./pages/Financials";
+import Alerts from "./pages/Alerts";
 import Placeholder from "./pages/Placeholder";
 
 const NAV = [
   { to: "/", label: "Overview", end: true },
   { to: "/companies", label: "Companies" },
-  { to: "/signals", label: "Signals", badge: 6 },
+  { to: "/signals", label: "Signals" },
   { to: "/financials", label: "Financials" },
-  { to: "/models", label: "Models" },
-  { to: "/sources", label: "Sources" },
   { to: "/alerts", label: "Alerts" },
   { to: "/chat", label: "AI Chat" },
 ];
@@ -24,14 +25,29 @@ function crumb(pathname) {
   if (pathname === "/chat") return { root: "DASHBOARD", leaf: "AI CHAT" };
   if (pathname === "/signals") return { root: "DASHBOARD", leaf: "SIGNALS" };
   if (pathname === "/financials") return { root: "DASHBOARD", leaf: "FINANCIALS" };
+  if (pathname === "/alerts") return { root: "DASHBOARD", leaf: "ALERTS" };
   if (pathname === "/") return { root: "DASHBOARD", leaf: "OVERVIEW" };
   const leaf = pathname.replace("/", "").toUpperCase() || "OVERVIEW";
   return { root: "DASHBOARD", leaf };
 }
 
+/* live count of unreviewed alerts for the sidebar badge */
+function useAlertBadge(pathname) {
+  const [n, setN] = useState(null);
+  useEffect(() => {
+    let live = true;
+    const tick = () => alertsApi.summary().then((s) => live && setN(s.new)).catch(() => {});
+    tick();
+    const id = setInterval(tick, 60000);
+    return () => { live = false; clearInterval(id); };
+  }, [pathname]);
+  return n;
+}
+
 export default function App() {
   const { pathname } = useLocation();
   const c = crumb(pathname);
+  const alertCount = useAlertBadge(pathname);
 
   return (
     <div className="app">
@@ -44,17 +60,20 @@ export default function App() {
           </div>
         </div>
         <nav className="nav">
-          {NAV.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.end}
-              className={({ isActive }) => (isActive ? "active" : undefined)}
-            >
-              <span className="label">{item.label}</span>
-              {item.badge ? <span className="badge">{item.badge}</span> : null}
-            </NavLink>
-          ))}
+          {NAV.map((item) => {
+            const badge = item.to === "/alerts" ? alertCount : item.badge;
+            return (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.end}
+                className={({ isActive }) => (isActive ? "active" : undefined)}
+              >
+                <span className="label">{item.label}</span>
+                {badge ? <span className="badge">{badge}</span> : null}
+              </NavLink>
+            );
+          })}
         </nav>
         <div className="sidebar-foot">
           <div className="avatar">AN</div>
@@ -89,9 +108,7 @@ export default function App() {
             <Route path="/chat" element={<AIChat />} />
             <Route path="/signals" element={<Signals />} />
             <Route path="/financials" element={<Financials />} />
-            <Route path="/models" element={<Placeholder title="Models" />} />
-            <Route path="/sources" element={<Placeholder title="Sources" />} />
-            <Route path="/alerts" element={<Placeholder title="Alerts" />} />
+            <Route path="/alerts" element={<Alerts />} />
           </Routes>
         </div>
       </div>

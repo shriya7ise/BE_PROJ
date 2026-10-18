@@ -1,21 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import {
-  API,
-  fetchCompanySignals,
-  fetchEsg,
-  fetchFinancialStudy,
-  fetchFinancials,
-  fetchReasoning,
-  sendChat,
-} from "../api";
+import { fetchFinancials, sendChat } from "../api";
 
 /* =====================================================================
-   Company detection (names, tickers, light typo tolerance)
+   Company detection, used for the instant "Focused on" chip.
+   The server runs the same detection, so both stay in step.
    ===================================================================== */
 const TRAILING = new Set([
   "inc", "incorporated", "corp", "corporation", "co", "company", "ltd", "limited", "plc",
-  "holdings", "holding", "group", "com", "llc", "lp", "sa", "nv", "ag", "class", "cl", "a", "b",
+  "holdings", "holding", "group", "com", "llc", "lp", "sa", "nv", "ag", "class", "cl", "a", "b", "and", "the",
 ]);
 const NOT_TICKERS = new Set([
   "ESG", "OSHA", "AI", "API", "CEO", "CFO", "USA", "US", "UK", "EU", "GDP", "ETF", "IPO",
@@ -48,7 +41,6 @@ function lev(a, b) {
   return d[m][n];
 }
 
-/* distinct matched companies, best first */
 function detect(text, index) {
   const nt = norm(text);
   const padded = ` ${nt} `;
@@ -59,14 +51,12 @@ function detect(text, index) {
     if (!prev || score > prev.score) found.set(c.symbol, { ...c, score, pos });
   };
 
-  // full or core name ("dollar tree", "Dollar Tree Inc")
   for (const c of index) {
     if (c.core.length < 3 && !/\d/.test(c.core)) continue;
     const pos = padded.indexOf(` ${c.core} `);
     if (pos >= 0) add(c, c.core.length, pos);
   }
 
-  // tickers: UPPERCASE word, $tsla, or lowercase next to a cue word ("lly company details")
   const bySymbol = new Map(index.map((c) => [c.symbol.toUpperCase(), c]));
   const re = /\$([A-Za-z]{1,5}(?:[.-][A-Za-z])?)\b|\b([A-Z]{2,5}(?:[.-][A-Z])?)\b/g;
   let m;
@@ -79,11 +69,9 @@ function detect(text, index) {
   words.forEach((w, i) => {
     if (w.length < 3 || COMMON_WORDS.has(w)) return;
     const c = bySymbol.get(w.toUpperCase());
-    if (!c) return;
-    if (TICKER_CUES.has(words[i - 1]) || TICKER_CUES.has(words[i + 1])) add(c, 90, i);
+    if (c && (TICKER_CUES.has(words[i - 1]) || TICKER_CUES.has(words[i + 1]))) add(c, 90, i);
   });
 
-  // typo tolerance on single-word company names ("walmrat" -> Walmart)
   if (!found.size) {
     for (const w of words) {
       if (w.length < 5) continue;
@@ -94,65 +82,6 @@ function detect(text, index) {
     }
   }
   return [...found.values()].sort((a, b) => b.score - a.score || a.pos - b.pos);
-}
-
-/* =====================================================================
-   Context builders
-   ===================================================================== */
-const SKIP_KEYS = new Set(["series", "drawdown", "rolling_vol", "embedding", "embeddings"]);
-
-function compact(v, depth = 0) {
-  if (v == null) return v;
-  if (depth > 7) return "…";
-  if (typeof v === "number") return Math.abs(v) >= 1000 ? Math.round(v) : Math.round(v * 1000) / 1000;
-  if (typeof v === "string") return v.length > 400 ? `${v.slice(0, 400)}…` : v;
-  if (Array.isArray(v)) {
-    const lim = depth <= 1 ? 14 : 6;
-    const out = v.slice(0, lim).map((x) => compact(x, depth + 1));
-    if (v.length > lim) out.push(`…(+${v.length - lim} more)`);
-    return out;
-  }
-  if (typeof v === "object") {
-    const o = {};
-    for (const [k, val] of Object.entries(v)) if (!SKIP_KEYS.has(k)) o[k] = compact(val, depth + 1);
-    return o;
-  }
-  return v;
-}
-const clip = (s, n) => (s.length > n ? `${s.slice(0, n)}…[truncated]` : s);
-
-function registerContext(reg, hits) {
-  const rows = reg.filter((r) => r.composite_score != null).sort((a, b) => b.composite_score - a.composite_score);
-  const line = (r, i) =>
-    `${i != null ? `${i + 1}. ` : "- "}${r.symbol} (${r.canonical_name}), sector ${r.gics_sector || "n/a"}, ` +
-    `score ${r.composite_score}, tier ${r.risk_tier}, status ${r.status || "n/a"}`;
-  const tiers = {};
-  const sectors = {};
-  rows.forEach((r) => {
-    const t = r.risk_tier || "Unknown";
-    tiers[t] = (tiers[t] || 0) + 1;
-    const sc = r.gics_sector || "Unknown";
-    if (!sectors[sc]) sectors[sc] = { n: 0, sum: 0, crit: 0 };
-    sectors[sc].n += 1;
-    sectors[sc].sum += r.composite_score;
-    if (r.risk_tier === "Critical") sectors[sc].crit += 1;
-  });
-  const estimated = rows.filter((r) => r.score_is_estimated).length;
-  const parts = [
-    `Companies covered: ${rows.length}. By tier: ${Object.entries(tiers).map(([k, v]) => `${k} ${v}`).join(", ")}. Estimated scores: ${estimated}.`,
-    `Top 15 by composite risk score:\n${rows.slice(0, 15).map((r, i) => line(r, i)).join("\n")}`,
-    `Lowest 5:\n${rows.slice(-5).reverse().map((r) => line(r)).join("\n")}`,
-    `Sectors by average score:\n${Object.entries(sectors)
-      .sort((a, b) => b[1].sum / b[1].n - a[1].sum / a[1].n)
-      .map(([k, v]) => `- ${k}: avg ${(v.sum / v.n).toFixed(1)} (${v.n} companies, ${v.crit} critical)`)
-      .join("\n")}`,
-  ];
-  const named = hits.map((h) => rows.find((r) => r.symbol === h.symbol)).filter(Boolean);
-  if (named.length) {
-    const rank = (r) => rows.findIndex((x) => x.symbol === r.symbol) + 1;
-    parts.push(`Companies named in the question:\n${named.map((r) => `${line(r)} (rank ${rank(r)} of ${rows.length})`).join("\n")}`);
-  }
-  return parts.join("\n\n");
 }
 
 function friendlyError(e) {
@@ -167,51 +96,22 @@ function friendlyError(e) {
 }
 
 /* =====================================================================
-   Personalisation
+   Personalisation (the server turns these into instructions)
    ===================================================================== */
-const ROLES = {
-  "Risk analyst": "a risk analyst who wants evidence, drivers and the reasoning behind each score",
-  "Executive": "a senior executive who wants the bottom line, business impact and decisions to make",
-  "Safety / EHS manager": "a workplace-safety (EHS) manager who wants OSHA-related causes and concrete corrective actions",
-  "Investor": "an investor who wants financial materiality, downside risk and how peers compare",
-};
-const STYLES = {
-  Concise: "Keep answers short: under 150 words, using tight bullets.",
-  Detailed: "Give a thorough answer with clear sections: Answer, Reasoning, Evidence, Recommendations.",
-};
+const ROLES = ["Risk analyst", "Executive", "Safety / EHS manager", "Investor"];
+const STYLES = ["Concise", "Detailed"];
 function loadPref(key, fallback, allowed) {
   try {
     const v = localStorage.getItem(key);
     return v && allowed.includes(v) ? v : fallback;
-  } catch {
-    return fallback;
-  }
+  } catch { return fallback; }
 }
 function savePref(key, v) {
   try { localStorage.setItem(key, v); } catch { /* ignore */ }
 }
 
-function buildPrompt({ question, role, style, focusLabel, dossier, register, history }) {
-  return [
-    `You are "Vigilance Analyst", the assistant inside an ESG-risk and financial-health dashboard. The reader is ${ROLES[role]}.`,
-    "RULES:",
-    "1. Use the DATA sections below as your primary source and quote the actual figures (scores, tiers, penalties, citations, margins, ranks). Never say a company is missing if it appears in the DATA.",
-    "2. Reasoning questions (why, how, explain): walk through the drivers step by step, e.g. composite score, corroboration count, OSHA citations and penalties, escalation status, and financial materiality. Say which facts support each point.",
-    "3. Recommendation questions: give measurable actions. For each: the action, KPI/metric, target value, timeframe, owner, and the evidence it addresses. Order by priority.",
-    "4. General questions (ESG concepts, OSHA, finance, how scores work, definitions): answer from general knowledge and label that part as general knowledge.",
-    "5. If a needed figure is not in the DATA, say so plainly instead of guessing. Mention when a score is marked as estimated. This is analysis for information, not investment or legal advice.",
-    `6. ${STYLES[style]}`,
-    focusLabel
-      ? `\nFOCUSED COMPANY: ${focusLabel}\n\nDATA: COMPANY DOSSIER\n${dossier || "(company detail data could not be loaded; rely on the register below)"}`
-      : "\nNo single company is focused.",
-    register ? `\nDATA: RISK REGISTER (composite score 0-100, higher = riskier)\n${register}` : "",
-    history ? `\nCONVERSATION SO FAR\n${history}` : "",
-    `\nUSER QUESTION:\n${question}`,
-  ].join("\n");
-}
-
 /* =====================================================================
-   Lightweight rich-text renderer (bold, bullets, numbered lists)
+   Lightweight rich text (bold, headings, bullets, numbered lists)
    ===================================================================== */
 function inline(text) {
   return String(text).split(/(\*\*[^*]+\*\*)/g).map((p, i) =>
@@ -219,7 +119,6 @@ function inline(text) {
   );
 }
 function Rich({ text }) {
-  const lines = String(text).split("\n");
   const out = [];
   let list = null;
   const flush = () => {
@@ -229,7 +128,7 @@ function Rich({ text }) {
       list = null;
     }
   };
-  lines.forEach((ln, i) => {
+  String(text).split("\n").forEach((ln, i) => {
     const mOl = ln.match(/^\s*\d+[.)]\s+(.*)/);
     const mUl = ln.match(/^\s*[-*•]\s+(.*)/);
     const mH = ln.match(/^\s*#{1,4}\s+(.*)/);
@@ -247,13 +146,10 @@ function Rich({ text }) {
   return <div>{out}</div>;
 }
 
-/* =====================================================================
-   Page
-   ===================================================================== */
 const INTRO = {
   role: "assistant",
   text:
-    "I'm your ESG risk analyst. Mention a company by name or ticker (for example “Dollar Tree” or “DLTR”) and I'll pull its ESG study, financials, signals and AI reasoning. I can explain why a score is what it is, recommend measurable actions, compare companies, and answer general ESG, OSHA and finance questions.",
+    "I'm your ESG risk analyst. Mention a company by name or ticker (for example “Dollar Tree” or “DLTR”) and I'll use its ESG study, financials, signals, model reasoning and open alerts. I can explain why a score is what it is, recommend measurable actions, compare companies, summarise your alerts, and answer general ESG, OSHA and finance questions.",
 };
 
 const selStyle = {
@@ -272,13 +168,10 @@ export default function AIChat() {
   const [busy, setBusy] = useState(false);
   const [companies, setCompanies] = useState([]);
   const [messages, setMessages] = useState([INTRO]);
-  const [dossierState, setDossierState] = useState("idle"); // idle | loading | ready | none
-  const [role, setRole] = useState(() => loadPref("vig.role", "Risk analyst", Object.keys(ROLES)));
-  const [style, setStyle] = useState(() => loadPref("vig.style", "Concise", Object.keys(STYLES)));
-
+  const [role, setRole] = useState(() => loadPref("vig.role", "Risk analyst", ROLES));
+  const [style, setStyle] = useState(() => loadPref("vig.style", "Concise", STYLES));
   const endRef = useRef(null);
-  const registerRef = useRef(null);
-  const dossierRef = useRef({});
+  const askedRef = useRef(false);
 
   useEffect(() => {
     fetchFinancials(500).then((d) => setCompanies(d.results || [])).catch(() => setCompanies([]));
@@ -286,57 +179,15 @@ export default function AIChat() {
 
   const index = useMemo(
     () =>
-      companies
-        .filter((r) => r.symbol)
-        .map((r) => ({
-          symbol: r.symbol,
-          name: r.canonical_name || r.symbol,
-          core: coreName(r.canonical_name || r.symbol),
-        })),
+      companies.filter((r) => r.symbol).map((r) => ({
+        symbol: r.symbol,
+        name: r.canonical_name || r.symbol,
+        core: coreName(r.canonical_name || r.symbol),
+      })),
     [companies]
   );
   const company = useMemo(() => index.find((c) => c.symbol === symbol), [index, symbol]);
   const label = company?.name || symbol;
-
-  async function loadRegister() {
-    if (registerRef.current) return registerRef.current;
-    try {
-      const res = await fetch(`${API}/api/companies?limit=500`);
-      if (!res.ok) return [];
-      const d = await res.json();
-      registerRef.current = d.results || [];
-      return registerRef.current;
-    } catch {
-      return [];
-    }
-  }
-
-  async function loadDossier(sym) {
-    if (dossierRef.current[sym]) return dossierRef.current[sym];
-    const jobs = [
-      ["ESG STUDY", fetchEsg],
-      ["FINANCIAL STUDY", fetchFinancialStudy],
-      ["SIGNALS", fetchCompanySignals],
-      ["AI REASONING", (s) => fetchReasoning(s, false)],
-    ];
-    const res = await Promise.allSettled(jobs.map(([, fn]) => fn(sym)));
-    const parts = res
-      .map((r, i) => (r.status === "fulfilled" && r.value ? `### ${jobs[i][0]}\n${clip(JSON.stringify(compact(r.value)), 6500)}` : null))
-      .filter(Boolean);
-    const text = parts.join("\n\n");
-    if (text) dossierRef.current[sym] = text;
-    return text;
-  }
-
-  // warm the company dossier as soon as a company is focused
-  useEffect(() => {
-    if (!symbol) { setDossierState("idle"); return; }
-    let live = true;
-    setDossierState("loading");
-    loadDossier(symbol).then((t) => live && setDossierState(t ? "ready" : "none"));
-    return () => { live = false; };
-    // eslint-disable-next-line
-  }, [symbol]);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
@@ -346,16 +197,16 @@ export default function AIChat() {
     ? [
         `Why is ${label}'s risk score what it is?`,
         `Recommend measurable actions for ${label}`,
-        `Explain the OSHA evidence for ${symbol}`,
+        `What alerts are open for ${symbol} and what should we do?`,
         `How does ${symbol}'s financial health compare with peers?`,
         `Brief me on ${label} in 5 bullets`,
       ]
     : [
         "Tell me about Dollar Tree",
         "Which companies have the highest ESG risk?",
+        "What are my most urgent open alerts?",
         "Which sector is riskiest and why?",
         "Explain how the composite risk score works",
-        "What is OSHA and why does it matter for ESG?",
       ];
 
   async function send(override) {
@@ -374,31 +225,14 @@ export default function AIChat() {
     }
 
     try {
-      const [reg, dossier] = await Promise.all([loadRegister(), sym ? loadDossier(sym) : Promise.resolve("")]);
-      const focusName = index.find((c) => c.symbol === sym)?.name || sym;
-      const history = prior
-        .filter((m) => m !== INTRO)
-        .slice(-6)
-        .map((m) => `${m.role === "user" ? "User" : "Assistant"}: ${clip(m.text, 700)}`)
-        .join("\n");
-
-      const prompt = buildPrompt({
-        question: text,
-        role,
-        style,
-        focusLabel: sym ? `${focusName} (${sym})` : "",
-        dossier,
-        register: reg.length ? registerContext(reg, hits.slice(0, 4)) : "",
-        history,
-      });
-
-      const data = await sendChat(prompt, sym || null);
+      const history = prior.filter((m) => m !== INTRO).slice(-8).map((m) => ({ role: m.role, text: m.text }));
+      const data = await sendChat(text, sym || null, { history, role, style });
+      if (data.symbol && data.symbol !== sym) setParams({ symbol: data.symbol }, { replace: true });
       const out = [{ role: "assistant", text: data.reply || JSON.stringify(data) }];
-      if (hits.length > 1) {
-        const others = hits.slice(1, 4).map((h) => `${h.name} (${h.symbol})`).join(", ");
+      if (data.also_named?.length) {
         out.push({
           role: "assistant",
-          text: `Note: I loaded the full dossier for ${hits[0].name} only. I used register-level scores for ${others}; ask about them separately for the same depth.`,
+          text: `Note: full detail was loaded for ${data.symbol}. For ${data.also_named.join(", ")} I used summary data; ask about them separately for the same depth.`,
         });
       }
       setMessages((m) => [...m, ...out]);
@@ -409,6 +243,19 @@ export default function AIChat() {
     }
   }
 
+  // deep link from the Alerts page: /chat?symbol=DLTR&ask=...
+  useEffect(() => {
+    const ask = params.get("ask");
+    if (ask && !askedRef.current) {
+      askedRef.current = true;
+      const next = new URLSearchParams(params);
+      next.delete("ask");
+      setParams(next, { replace: true });
+      send(ask);
+    }
+    // eslint-disable-next-line
+  }, []);
+
   return (
     <div className="chat-layout">
       <div>
@@ -417,10 +264,10 @@ export default function AIChat() {
           <div style={{ display: "flex", gap: 8, alignItems: "center", fontSize: 12, color: "var(--muted)" }}>
             <label>Answer as for</label>
             <select style={selStyle} value={role} onChange={(e) => { setRole(e.target.value); savePref("vig.role", e.target.value); }}>
-              {Object.keys(ROLES).map((r) => <option key={r}>{r}</option>)}
+              {ROLES.map((r) => <option key={r}>{r}</option>)}
             </select>
             <select style={selStyle} value={style} onChange={(e) => { setStyle(e.target.value); savePref("vig.style", e.target.value); }}>
-              {Object.keys(STYLES).map((s) => <option key={s}>{s}</option>)}
+              {STYLES.map((s) => <option key={s}>{s}</option>)}
             </select>
             <button className="btn" type="button" onClick={() => setMessages([INTRO])}>Clear chat</button>
           </div>
@@ -428,11 +275,6 @@ export default function AIChat() {
         {symbol ? (
           <div className="chat-context">
             Focused on: <strong>{label}</strong> ({symbol})
-            <span style={{ marginLeft: 8, fontSize: 11, color: "var(--muted)" }}>
-              {dossierState === "loading" && "loading company data…"}
-              {dossierState === "ready" && "company data loaded"}
-              {dossierState === "none" && "company detail unavailable, using register only"}
-            </span>
             <button
               type="button"
               onClick={() => { const next = new URLSearchParams(params); next.delete("symbol"); setParams(next); }}
